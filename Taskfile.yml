@@ -1,0 +1,35 @@
+version: "3"
+
+tasks:
+  tidy:
+    desc: Tidy module dependencies
+    cmds:
+      - go mod tidy
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - go test ./...
+
+  format:
+    desc: Format source code
+    cmds:
+      - go tool -modfile=./tools/go.tool.mod gofumpt -l -w .
+
+  lint:
+    desc: Analyze code style, errors and layer dependencies
+    cmds:
+      - go tool -modfile=./tools/go.tool.mod golangci-lint run ./...
+
+  mock:
+    desc: Generate test mocks
+    vars:
+      MOCKERY_YAML: '{{.MOCKERY_YAML | default "./config/mockery.yaml"}}'
+    cmds:
+      - go tool -modfile=./tools/go.tool.mod mockery --config={{.MOCKERY_YAML}}
+
+  coverage:
+    desc: Display coverage report
+    cmds:
+      - go test -coverprofile=coverage.out $(go list ./... | grep -v /mock)
+      - go tool cover -func=coverage.out
